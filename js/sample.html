@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="zmq_bridge.js"></script>
+    <script>
+    
+    var w = new ZMQ.bridge('ws://localhost:8080/pull/info');
+    w.receive( function(msg) {
+        $('.messages').append('<p>' + msg + '</p');
+    });
+    
+    $(document).ready( function() {
+        // w.send('hello');
+    });
+    </script>
+</head>
+<body>
+    <frameset>
+    <legend>Messages</legend>
+        <div class="messages"></div>
+    </frameset>
+</body>
+</html>

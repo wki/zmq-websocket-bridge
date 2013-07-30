@@ -21,8 +21,8 @@ ZMQ.bridge = function(url) {
     };
     
     this.receive = function(callback) {
-        this._socket.receive(function(message) {
+        this._socket.onmessage = function(message) {
             callback(message.data);
-        });
+        };
     };
 };
