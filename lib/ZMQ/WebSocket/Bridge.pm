@@ -3,8 +3,8 @@ use 5.010;
 use Moose;
 use IO::Async::Loop;
 # use ZMQ::Simple;
-# use Net::WebSocket::Server;
 use ZMQ::WebSocket::Bridge::Webserver;
+use ZMQ::WebSocket::Bridge::WebSocket;
 use namespace::autoclean;
 
 with 'MooseX::Getopt::Strict';
@@ -62,10 +62,32 @@ sub _build_webserver {
     my $self = shift;
     
     ZMQ::WebSocket::Bridge::Webserver->new(
-        port => 8080,
+        parent => $self,
+        port   => 8080,
     );
     
     ### TODO: find a way to map URLs to actions
+}
+
+=head2 websocket
+
+A Websocket listening service
+
+=cut
+
+has websocket => (
+    is => 'ro',
+    isa => 'ZMQ::WebSocket::Bridge::WebSocket',
+    lazy_build => 1,
+);
+
+sub _build_websocket {
+    my $self = shift;
+    
+    ZMQ::WebSocket::Bridge::WebSocket->new(
+        parent => $self,
+        port   => 4000,
+    );
 }
 
 =head1 METHODS
@@ -109,50 +131,12 @@ sub run {
     
     ### TODO: add a statistics object containing all relevant things
     
-    $self->add($self->webserver);
     $self->webserver->start;
-    
-    ### TODO: add websocket listener
+    $self->websocket->start;
     
     say 'running loop...';
     $self->loop->run;
 }
-
-# sub run {
-#     my $self = shift;
-#     
-#     say 'starting server.';
-#     
-#     Net::WebSocket::Server->new(
-#         listen => 8080,
-#         on_connect => sub {
-#             my ($serv, $conn) = @_;
-#             $conn->on(
-#                 handshake => sub { $self->_handshake(@_) },
-#                 utf8 => sub {
-#                     my ($conn, $msg) = @_;
-#                     warn "utf8: ($conn) $msg";
-#                     $_->send_utf8($msg) for $conn->server->connections;
-#                 },
-#                 binary => sub {
-#                     my ($conn, $msg) = @_;
-#                     warn "binary: $msg";
-#                     $_->send_binary($msg) for $conn->server->connections;
-#                 },
-#             );
-#         },
-#     )->start;
-# }
-# 
-# sub _handshake {
-#     my ($self, $conn, $handshake) = @_;
-#     warn sprintf 'handshake - origin: "%s", resource: "%s" ', 
-#         $handshake->req->origin, 
-#         $handshake->req->resource_name;
-#     
-#     
-#     # $conn->disconnect() unless $handshake->req->origin eq $origin;
-# }
 
 __PACKAGE__->meta->make_immutable;
 1;

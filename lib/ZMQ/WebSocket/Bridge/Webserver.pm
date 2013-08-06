@@ -1,10 +1,16 @@
 package ZMQ::WebSocket::Bridge::Webserver;
 use 5.010;
 use Moose;
-use MooseX::NonMoose;
 use Net::Async::HTTP::Server;
 use HTTP::Response;
 use namespace::autoclean;
+
+has parent => (
+    is       => 'ro',
+    isa      => 'Object',
+    required => 1,
+    weak_ref => 1,
+);
 
 has port => (
     is      => 'ro',
@@ -26,7 +32,7 @@ sub _build_notifier {
             my $self = shift;
             my ($req) = @_;
             
-            say join ' ', $req->method, $req->path;
+            say join ' ', 'http', $req->method, $req->path;
             
             my $content = "blabla\n";
             my $res = HTTP::Response->new(200);
@@ -43,6 +49,8 @@ sub _build_notifier {
 
 sub start {
     my $self = shift;
+    
+    $self->parent->add($self);
     
     $self->notifier->listen(
         addr => {
