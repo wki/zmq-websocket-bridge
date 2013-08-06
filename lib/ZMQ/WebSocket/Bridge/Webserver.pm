@@ -22,27 +22,21 @@ sub _build_notifier {
     my $self = shift;
 
     Net::Async::HTTP::Server->new(
-        # FIXME: socket not listening at this moment!
-        on_request => sub {
+        on_request =>sub {
             my $self = shift;
             my ($req) = @_;
             
             say join ' ', $req->method, $req->path;
             
+            my $content = "blabla\n";
             my $res = HTTP::Response->new(200);
-            $res->add_content("blabla\n");
+            $res->header('Content-Length' => length $content);
+            $res->add_content($content);
             $res->content_type('text/plain');
             
             $req->respond($res);
             
-            say 'Loop: ' . $self->loop;
-            $self->loop->remove($self);
-            
-            $self->close_read;
-            $self->close_write;
-            
-            # FIXME: socket is not closed!
-            say 'request done';
+            say 'http-request done';
         },
     );
 }

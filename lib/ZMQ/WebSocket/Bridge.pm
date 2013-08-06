@@ -64,6 +64,8 @@ sub _build_webserver {
     ZMQ::WebSocket::Bridge::Webserver->new(
         port => 8080,
     );
+    
+    ### TODO: find a way to map URLs to actions
 }
 
 =head1 METHODS
@@ -81,7 +83,6 @@ Maybe, we can move loop into a regular attribute, we will see :-)
 sub loop {
     state $loop = IO::Async::Loop->new;
     
-    warn "Loop: $loop";
     return $loop;
 }
 
@@ -106,11 +107,14 @@ start the server
 sub run {
     my $self = shift;
     
-    say 'adding webserver';
+    ### TODO: add a statistics object containing all relevant things
+    
     $self->add($self->webserver);
     $self->webserver->start;
     
-    say 'starting loop';
+    ### TODO: add websocket listener
+    
+    say 'running loop...';
     $self->loop->run;
 }
 
