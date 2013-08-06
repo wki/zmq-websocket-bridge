@@ -29,12 +29,16 @@ sub _build_notifier {
 
     Net::Async::HTTP::Server->new(
         on_request =>sub {
-            my $self = shift;
+            my $dummy = shift;
             my ($req) = @_;
             
             say join ' ', 'http', $req->method, $req->path;
             
-            my $content = "blabla\n";
+            my @lines;
+            push @lines, map { ref($_) . ':' . $_->notifier_name } $self->parent->loop->notifiers;
+            
+            my $content = join "\n", @lines;
+            
             my $res = HTTP::Response->new(200);
             $res->header('Content-Length' => length $content);
             $res->add_content($content);
