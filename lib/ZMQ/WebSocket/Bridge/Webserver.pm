@@ -5,6 +5,7 @@ use Net::Async::HTTP::Server;
 use HTTP::Response;
 use namespace::autoclean;
 
+
 has parent => (
     is       => 'ro',
     isa      => 'Object',
@@ -36,6 +37,8 @@ sub _build_notifier {
             
             my @lines;
             push @lines, map { ref($_) . ':' . $_->notifier_name } $self->parent->loop->notifiers;
+            push @lines, '';
+            push @lines, 'loop: ' . ref $self->notifier->loop;
             
             my $content = join "\n", @lines;
             

@@ -5,6 +5,7 @@ use IO::Async::Loop;
 # use ZMQ::Simple;
 use ZMQ::WebSocket::Bridge::Webserver;
 use ZMQ::WebSocket::Bridge::WebSocket;
+use Data::Dumper;
 use namespace::autoclean;
 
 with 'MooseX::Getopt::Strict';
@@ -129,13 +130,23 @@ start the server
 sub run {
     my $self = shift;
     
+    # force to use the Poll loop, because it has a nice hook
+    local $IO::Async::Loop::LOOP = 'Poll';
+    
     ### TODO: add a statistics object containing all relevant things
     
     $self->webserver->start;
     $self->websocket->start;
     
     say 'running loop...';
-    $self->loop->run;
+    
+    # $self->loop->run;
+    
+    my $loop = $self->loop;
+    while (1) {
+        $loop->loop_once(0.5);
+        say Dumper $loop->{iowatches};
+    }
 }
 
 __PACKAGE__->meta->make_immutable;
